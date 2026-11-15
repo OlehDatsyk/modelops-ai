@@ -22,6 +22,9 @@ requests to a **ModelOps gateway** instead of calling providers directly; the ga
 latency, status, errors and an estimated cost. On top of that data you get dashboards, request logs, cost breakdowns,
 budgets, alerts and an **AI Analyst** that answers questions about your usage from your real numbers.
 
+> **Live:** <https://modelops-ai.onrender.com> · API docs: <https://modelops-ai.onrender.com/api/docs> ·
+> health: <https://modelops-ai.onrender.com/api/v1/health> (Render free tier: the first request after idle can take ~50 s).
+
 > **Project status:** v1.0.0 — feature-complete for the scope in [PROJECT_REVIEW.md](PROJECT_REVIEW.md), with automated
 > tests and CI. Costs are **estimates** derived from a configurable pricing table, not provider invoices.
 

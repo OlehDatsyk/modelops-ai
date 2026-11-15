@@ -25,4 +25,6 @@ All notable changes to this project are documented here. The format follows
 - **Security**: security headers, CSP, body-size limits, CORS restrictions, sanitised errors, redacting log filter.
 - PostgreSQL schema with Alembic migrations and a daily usage roll-up table.
 - 87 backend tests (pytest + respx, real PostgreSQL) and 16 frontend tests (Vitest + Testing Library).
+- `DATABASE_NAME` setting, `app.cli ensure-database` and `render.shared-db.yaml` for deployments that share an
+  existing PostgreSQL server.
 - Dockerfile (multi-stage, non-root), Docker Compose, Render Blueprint, GitHub Actions CI, Windows/macOS launchers.

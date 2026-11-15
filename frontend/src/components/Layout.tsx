@@ -17,7 +17,7 @@ import {
   ShieldAlert,
   X,
 } from 'lucide-react'
-import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
+import { useEffect, useId, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { api } from '../lib/api'
 import { useAuth } from '../lib/auth'
@@ -37,17 +37,19 @@ const NAV: { to: string; label: string; icon: typeof LayoutDashboard; section?: 
 ]
 
 export function Logo({ className }: { className?: string }) {
+  // Unique per instance: a duplicate gradient id inside a hidden element would make every logo render blank.
+  const gradientId = `logo-g-${useId().replace(/:/g, '')}`
   return (
     <div className={clsx('flex items-center gap-2.5', className)}>
       <svg viewBox="0 0 32 32" className="size-8" aria-hidden>
         <defs>
-          <linearGradient id="logo-g" x1="0" y1="0" x2="1" y2="1">
+          <linearGradient id={gradientId} x1="0" y1="0" x2="1" y2="1">
             <stop offset="0" stopColor="#4f8cff" />
             <stop offset="1" stopColor="#8b5cf6" />
           </linearGradient>
         </defs>
         <rect width="32" height="32" rx="8" fill="#141c38" stroke="#2e3b68" />
-        <path d="M7 22V10l5 7 4-5 4 5 5-7v12" fill="none" stroke="url(#logo-g)" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M7 22V10l5 7 4-5 4 5 5-7v12" fill="none" stroke={`url(#${gradientId})`} strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
       <div className="leading-tight">
         <div className="text-[15px] font-semibold tracking-tight text-ink">ModelOps AI</div>
