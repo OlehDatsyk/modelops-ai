@@ -2,6 +2,8 @@
 # Applies database migrations, seeds missing reference prices, then starts the server.
 set -e
 
+python -m app.cli ensure-database
+
 echo "Applying database migrations..."
 alembic upgrade head
 

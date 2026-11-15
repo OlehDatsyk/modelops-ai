@@ -1,0 +1,41 @@
+# Render Blueprint variant for workspaces that already use their one free PostgreSQL instance.
+# ModelOps runs in its own database ("modelops") on an EXISTING PostgreSQL server in the same
+# workspace and region; its tables never mix with the other application's database.
+#
+# Usage: New → Blueprint → this repo → Blueprint Path: render.shared-db.yaml
+# Change `fromDatabase.name` and `region` to match your existing database.
+services:
+  - type: web
+    name: modelops-ai
+    runtime: docker
+    plan: free
+    region: frankfurt # must match the existing database's region
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /api/v1/health
+    autoDeploy: true
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: DATABASE_URL # server credentials of the existing database (internal URL)
+        fromDatabase:
+          name: remixfox-db
+          property: connectionString
+      - key: DATABASE_NAME # created on first start by `python -m app.cli ensure-database`
+        value: modelops
+      - key: JWT_SECRET_KEY
+        generateValue: true
+      - key: MASTER_ENCRYPTION_KEY
+        generateValue: true # back this value up: losing it makes stored provider keys unreadable
+      - key: LOG_LEVEL
+        value: INFO
+      - key: TRUSTED_PROXY_HOPS # Render's proxy appends the client IP to X-Forwarded-For
+        value: "1"
+      - key: RATE_LIMIT_GATEWAY_PER_MINUTE
+        value: "120"
+      - key: AI_ANALYST_PROVIDER
+        sync: false
+      - key: AI_ANALYST_MODEL
+        sync: false
+      - key: AI_ANALYST_API_KEY
+        sync: false

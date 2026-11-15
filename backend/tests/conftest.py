@@ -52,7 +52,7 @@ PASSWORD = "Sup3r-Secret-Pass"
 def alembic_config() -> Config:
     cfg = Config(str(BACKEND_DIR / "alembic.ini"))
     cfg.set_main_option("script_location", str(BACKEND_DIR / "alembic"))
-    cfg.attributes["database_url"] = get_settings().database_url
+    cfg.attributes["database_url"] = get_settings().effective_database_url
     return cfg
 
 

@@ -1,6 +1,7 @@
 """Maintenance commands.
 
 python -m app.cli seed-pricing     Insert missing reference prices (never overwrites)
+python -m app.cli ensure-database  Create DATABASE_NAME on the DATABASE_URL server when it is missing
 python -m app.cli rotate-keys      Re-encrypt provider credentials with the first MASTER_ENCRYPTION_KEY
 python -m app.cli check            Verify configuration and database connectivity
 python -m app.cli generate-secrets Print fresh random values for JWT_SECRET_KEY and MASTER_ENCRYPTION_KEY
@@ -20,6 +21,31 @@ def seed_pricing() -> None:
 
     with get_sessionmaker()() as db:
         print(f"Reference pricing: {seed_reference_pricing(db)} row(s) inserted.")
+
+
+def ensure_database() -> None:
+    """Create DATABASE_NAME on the DATABASE_URL server if it does not exist (shared-server deployments)."""
+    from sqlalchemy import create_engine
+    from sqlalchemy.pool import NullPool
+
+    from app.core.config import get_settings
+
+    settings = get_settings()
+    name = settings.database_name
+    if not name:
+        print("DATABASE_NAME not set: using the database from DATABASE_URL.")
+        return
+    engine = create_engine(
+        settings.database_url, isolation_level="AUTOCOMMIT", poolclass=NullPool, connect_args={"connect_timeout": 10}
+    )
+    with engine.connect() as conn:
+        if conn.execute(text("SELECT 1 FROM pg_database WHERE datname = :n"), {"n": name}).scalar():
+            print(f"Database '{name}' exists.")
+            return
+        # CREATE DATABASE cannot take bind parameters; the name is restricted to [A-Za-z0-9_] by settings validation.
+        conn.execute(text(f'CREATE DATABASE "{name}"'))
+        print(f"Database '{name}' created.")
+    engine.dispose()
 
 
 def rotate_keys() -> None:
@@ -54,6 +80,7 @@ def generate_secrets() -> None:
 
 COMMANDS = {
     "seed-pricing": seed_pricing,
+    "ensure-database": ensure_database,
     "rotate-keys": rotate_keys,
     "check": check,
     "generate-secrets": generate_secrets,

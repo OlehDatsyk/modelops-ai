@@ -77,6 +77,7 @@ The `app` service reads `.env` (so the two secrets must be set) and talks to the
 | --- | --- | --- |
 | `ENVIRONMENT` | `development` | `production` enables HSTS and `Secure` cookies |
 | `DATABASE_URL` | local compose DB | Any of `postgres://`, `postgresql://`, `postgresql+psycopg://` |
+| `DATABASE_NAME` | empty | Use this database on the `DATABASE_URL` server instead (created by `app.cli ensure-database`) |
 | `JWT_SECRET_KEY` | — (**required**) | ≥ 32 characters |
 | `MASTER_ENCRYPTION_KEY` | — (**required**) | ≥ 32 characters; comma-separated list for rotation (first encrypts) |
 | `ACCESS_TOKEN_MINUTES` / `REFRESH_TOKEN_DAYS` | 15 / 14 | Token lifetimes |
@@ -179,6 +180,15 @@ Steps:
    and save (triggers a redeploy).
 5. Open `https://<service>.onrender.com`, register, and verify `https://<service>.onrender.com/api/v1/health`.
 
+### Sharing an existing PostgreSQL server
+
+Render allows one free PostgreSQL instance per workspace. If yours is already in use, deploy with
+**`render.shared-db.yaml`** (Blueprint Path field): it creates only the web service, takes the server credentials
+of an existing database via `fromDatabase` (edit `name` and `region` to match yours), and sets
+`DATABASE_NAME=modelops`. On start, `python -m app.cli ensure-database` creates that separate database on the shared
+server, so ModelOps tables never mix with the other application's tables. Note that it shares that server's storage
+and free-tier lifetime.
+
 Notes:
 
 - **Back up `MASTER_ENCRYPTION_KEY`** from the Render dashboard; without it stored provider keys cannot be decrypted.
@@ -193,6 +203,7 @@ Notes:
 | Apply migrations | `alembic upgrade head` (automatic in Docker) |
 | Create a migration after model changes | `alembic revision --autogenerate -m "describe change"`, review it, commit it |
 | Check models vs. migrations | `alembic check` |
+| Create the app database on a shared server | `python -m app.cli ensure-database` (automatic in Docker) |
 | Seed missing reference prices | `python -m app.cli seed-pricing` (never overwrites) |
 | Rotate the encryption key | set `MASTER_ENCRYPTION_KEY=new,old` → `python -m app.cli rotate-keys` → set `MASTER_ENCRYPTION_KEY=new` |
 | Rotate the JWT secret | change `JWT_SECRET_KEY` (signs everyone out of access tokens; refresh cookies keep working) |

@@ -229,7 +229,8 @@ the schema with the Alembic migrations (upgrade and downgrade are both exercised
 The repository includes a [Render Blueprint](render.yaml): one Docker **web service** (API + UI) and one **PostgreSQL**
 database. In the Render dashboard choose **New → Blueprint**, select this repository and apply. Render generates
 `JWT_SECRET_KEY` and `MASTER_ENCRYPTION_KEY`, wires `DATABASE_URL`, runs migrations on start and health-checks
-`/api/v1/health`. Optionally set the three `AI_ANALYST_*` variables in the dashboard. Details:
+`/api/v1/health`. Optionally set the three `AI_ANALYST_*` variables in the dashboard. If your workspace's single free
+database is already taken, use `render.shared-db.yaml` to run ModelOps in its own database on that server. Details:
 [INSTRUCTION.md → Deploying to Render](INSTRUCTION.md#deploying-to-render).
 
 ## Security

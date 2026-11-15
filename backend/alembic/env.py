@@ -18,7 +18,7 @@ target_metadata = Base.metadata
 
 def _url() -> str:
     # Tests pass an explicit URL through the Alembic config; otherwise use DATABASE_URL.
-    return config.attributes.get("database_url") or get_settings().database_url
+    return config.attributes.get("database_url") or get_settings().effective_database_url
 
 
 def run_migrations_offline() -> None:

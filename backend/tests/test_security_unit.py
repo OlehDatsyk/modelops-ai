@@ -131,3 +131,9 @@ def test_settings_require_secrets(monkeypatch):
 def test_database_url_normalisation(monkeypatch):
     monkeypatch.setenv("DATABASE_URL", "postgres://u:p@host:5432/db")
     assert Settings().database_url == "postgresql+psycopg://u:p@host:5432/db"
+    assert Settings().effective_database_url == "postgresql+psycopg://u:p@host:5432/db"
+    monkeypatch.setenv("DATABASE_NAME", "modelops")
+    assert Settings().effective_database_url == "postgresql+psycopg://u:p@host:5432/modelops"
+    monkeypatch.setenv("DATABASE_NAME", "bad;name")
+    with pytest.raises(ValueError):
+        Settings()

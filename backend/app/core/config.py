@@ -8,6 +8,7 @@ from typing import Literal
 
 from pydantic import Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from sqlalchemy.engine import make_url
 
 ROOT_DIR = Path(__file__).resolve().parents[3]
 BACKEND_DIR = Path(__file__).resolve().parents[2]
@@ -31,6 +32,10 @@ class Settings(BaseSettings):
 
     # --- Database ------------------------------------------------------------
     database_url: str = "postgresql+psycopg://modelops:modelops@127.0.0.1:5434/modelops"
+    # Optional: use this database name on the DATABASE_URL server instead of the one in the URL.
+    # Lets ModelOps live in its own database on a shared PostgreSQL server
+    # (`python -m app.cli ensure-database` creates it).
+    database_name: str = Field(default="", pattern=r"^[A-Za-z_][A-Za-z0-9_]{0,62}$|^$")
     db_pool_size: int = 5
     db_max_overflow: int = 5
 
@@ -74,6 +79,12 @@ class Settings(BaseSettings):
         if value.startswith("postgresql://"):
             value = "postgresql+psycopg://" + value[len("postgresql://") :]
         return value
+
+    @property
+    def effective_database_url(self) -> str:
+        if not self.database_name:
+            return self.database_url
+        return make_url(self.database_url).set(database=self.database_name).render_as_string(hide_password=False)
 
     @model_validator(mode="after")
     def _check_secrets(self) -> Settings:
